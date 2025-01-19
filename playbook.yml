@@ -218,6 +218,11 @@
       args:
         chdir: "{{ movim_dir }}"
 
+    - name: Run Movim database migrations
+      command: composer movim:migrate
+      args:
+        chdir: "{{ movim_dir }}"
+
     - name: Create Movim .env file
       copy:
         dest: "{{ movim_dir }}/.env"
