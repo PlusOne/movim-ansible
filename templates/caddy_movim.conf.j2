@@ -12,7 +12,7 @@ your.domain.tld {
     @static path /stickers/* /cache/* /theme/* /scripts/*.js #No need to use a @name matcher but is a bit more organized
 
     handle @static {
-        root * /path-to/movim/public
+        root * {{ movim_dir }}/public
         file_server
     }
 
@@ -20,7 +20,7 @@ your.domain.tld {
         rewrite * /index.php?{query}
         reverse_proxy unix//run/php/php-fpm.sock {
             transport fastcgi {
-                env SCRIPT_FILENAME /path-to/movim/public/index.php
+                env SCRIPT_FILENAME {{ movim_dir }}/public/index.php
             }
         }
     }
