@@ -263,7 +263,7 @@
 
     - name: Configure Caddy for Movim
       template:
-        src: caddy_movim.conf.j2
+        src: templates/caddy_movim.conf.j2
         dest: /etc/caddy/Caddyfile
       when: web_server == "caddy"
 
