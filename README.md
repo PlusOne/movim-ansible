@@ -56,7 +56,22 @@ During the execution of the playbook, you will be prompted to enter the followin
    - **web_server:** Select the web server (`nginx`, `caddy`, `apache2`) you wish to use.
    - **backend_port:** Enter the port number for the backend service (default: `8075`).
 
-3. **Access Movim:**
+3. **Run Database Migrations:**
+   After the playbook completes, navigate to the Movim directory and run the migrations:
+   ```bash
+   cd /var/www/movim
+   composer movim:migrate
+   ```
+
+4. **(Optional) Install Movim Systemd Service:**
+   If you chose to install the systemd service during the playbook execution, the service will be enabled and started automatically. You can manage the service using:
+   ```bash
+   sudo systemctl start movim
+   sudo systemctl enable movim
+   sudo systemctl status movim
+   ```
+
+5. **Access Movim:**
    After successful execution, access Movim via the domain you specified.
 
 ## Handlers

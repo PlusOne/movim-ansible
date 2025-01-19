@@ -1,0 +1,15 @@
+
+[Unit]
+Description=Movim XMPP HTTP Service
+After=network.target
+
+[Service]
+Type=simple
+User={{ service_user }}
+Group={{ service_user }}
+WorkingDirectory={{ movim_dir }}
+ExecStart=/usr/bin/composer movim:daemon
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

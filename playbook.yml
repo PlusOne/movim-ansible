@@ -10,6 +10,8 @@
     movim_dir: /var/www/movim
     reinstall: false
     php_version: 8.1
+    install_service: true
+    service_user: www-data
 
   vars_prompt:
     - name: daemon_url
@@ -42,6 +44,14 @@
       prompt: "Enter the backend port"
       private: no
       default: "8075"
+    - name: install_service
+      prompt: "Do you want to install the Movim systemd service? (yes/no)"
+      private: no
+      default: "yes"
+    - name: service_user
+      prompt: "Enter the service user"
+      private: no
+      default: "www-data"
 
   tasks:
     - name: Remove existing Movim directory and drop DB if reinstall
@@ -303,6 +313,23 @@
           - db_type in ['mysql', 'postgresql']
         fail_msg: "db_type must be either 'mysql' or 'postgresql'."
 
+    - name: Create systemd service file for Movim
+      template:
+        src: systemd_movim.service.j2
+        dest: /etc/systemd/system/movim.service
+      when: install_service | default(false)
+
+    - name: Reload systemd daemon
+      command: systemctl daemon-reload
+      when: install_service | default(false)
+
+    - name: Enable Movim service
+      systemd:
+        name: movim
+        enabled: true
+        state: started
+      when: install_service | default(false)
+
   handlers:
     - name: Reload Nginx
       service:
@@ -313,3 +340,9 @@
       service:
         name: "{{ web_server }}"
         state: reloaded
+
+    - name: Restart Movim Service
+      service:
+        name: movim
+        state: restarted
+      when: install_service | default(false)
