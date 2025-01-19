@@ -34,6 +34,10 @@
       prompt: "Select Web Server (nginx/caddy/apache2)"
       private: no
       default: "nginx"
+    - name: backend_ip
+      prompt: "Enter the backend IP address"
+      private: no
+      default: "127.0.0.1"
 
   tasks:
     - name: Remove existing Movim directory and drop DB if reinstall
