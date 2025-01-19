@@ -17,6 +17,7 @@ During the execution of the playbook, you will be prompted to enter the followin
 - `mysql_root_password`: MySQL root password.
 - `domain_name`: The domain name for Nginx.
 - `web_server`: Select the web server to use (`nginx`, `caddy`, `apache2`).
+- `backend_port`: The port number for the backend service (default: `8075`).
 
 ## Installation
 
@@ -53,6 +54,7 @@ During the execution of the playbook, you will be prompted to enter the followin
    - **mysql_root_password:** Enter the MySQL root password.
    - **domain_name:** Specify the domain name for Nginx configuration.
    - **web_server:** Select the web server (`nginx`, `caddy`, `apache2`) you wish to use.
+   - **backend_port:** Enter the port number for the backend service (default: `8075`).
 
 3. **Access Movim:**
    After successful execution, access Movim via the domain you specified.

@@ -38,6 +38,10 @@
       prompt: "Enter the backend IP address"
       private: no
       default: "127.0.0.1"
+    - name: backend_port
+      prompt: "Enter the backend port"
+      private: no
+      default: "8075"
 
   tasks:
     - name: Remove existing Movim directory and drop DB if reinstall
