@@ -1,0 +1,302 @@
+---
+- name: Install Movim XMPP HTTP responsive client
+  hosts: all
+  become: yes
+
+  vars:
+    db_name: movim_db
+    db_user: movim_user
+    db_password: secure_password
+    movim_dir: /var/www/movim
+    reinstall: false
+    php_version: 8.1
+
+  vars_prompt:
+    - name: daemon_url
+      prompt: "Enter the DAEMON_URL"
+      private: no
+      default: "https://movim.example.net/"
+    - name: db_type
+      prompt: "Select Database Type (mysql/postgresql)"
+      private: no
+      default: "mysql"
+    - name: mysql_root_user
+      prompt: "Enter MySQL root username"
+      private: no
+      default: "root"
+    - name: mysql_root_password
+      prompt: "Enter MySQL root password"
+      private: yes
+    - name: domain_name
+      prompt: "Enter the domain name for Nginx"
+      private: no
+    - name: web_server
+      prompt: "Select Web Server (nginx/caddy/apache2)"
+      private: no
+      default: "nginx"
+
+  tasks:
+    - name: Remove existing Movim directory and drop DB if reinstall
+      block:
+        - name: Remove Movim directory
+          file:
+            path: "{{ movim_dir }}"
+            state: absent
+
+        - name: Drop MySQL database
+          mysql_db:
+            name: "{{ db_name }}"
+            state: absent
+      when: reinstall | default(false)
+
+    - name: Ensure MySQL is installed
+      apt:
+        name: mysql-server
+        state: present
+      when: db_type == "mysql"
+
+    - name: Ensure PostgreSQL is installed
+      apt:
+        name: postgresql
+        state: present
+      when: db_type == "postgresql"
+
+    - name: Ensure python3-pymysql is installed for Ansible MySQL modules
+      apt:
+        name: python3-pymysql
+        state: present
+      when: db_type == "mysql"
+
+    - name: Ensure python3-psycopg2 is installed for Ansible PostgreSQL modules
+      apt:
+        name: python3-psycopg2
+        state: present
+      when: db_type == "postgresql"
+
+    - name: Ensure MySQL service is started
+      service:
+        name: mysql
+        state: started
+      when: db_type == "mysql"
+
+    - name: Ensure PostgreSQL service is started
+      service:
+        name: postgresql
+        state: started
+      when: db_type == "postgresql"
+
+    - name: Check MySQL service status
+      command: systemctl status mysql.service
+      register: mysql_status
+      failed_when: false
+      when: db_type == "mysql"
+
+    - name: Check PostgreSQL service status
+      command: systemctl status postgresql.service
+      register: postgresql_status
+      failed_when: false
+      when: db_type == "postgresql"
+
+    - name: Debug MySQL service status
+      debug:
+        var: mysql_status.stdout_lines
+      when: db_type == "mysql"
+
+    - name: Debug PostgreSQL service status
+      debug:
+        var: postgresql_status.stdout_lines
+      when: db_type == "postgresql"
+
+    - name: Ensure required packages are installed
+      apt:
+        name: 
+          - nginx
+          - php{{ php_version }}-fpm
+          - php{{ php_version }}-mysql
+          - git
+        state: present
+
+    - name: Ensure additional PHP modules and composer are installed
+      apt:
+        name:
+          - php-imagick
+          - php-gd
+          - php-xml
+          - php-mbstring
+          - composer
+          - php{{ php_version }}-curl
+        state: present
+
+    - name: Check if MySQL database exists
+      mysql_db:
+        login_user: "{{ mysql_root_user }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        name: "{{ db_name }}"
+        state: present
+      register: db_exists
+      when: db_type == "mysql"
+
+    - name: Check if PostgreSQL database exists
+      postgresql_db:
+        name: "{{ db_name }}"
+        state: present
+      register: db_exists
+      when: db_type == "postgresql"
+
+    - name: Create MySQL database if it does not exist
+      mysql_db:
+        login_user: "{{ mysql_root_user }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        name: "{{ db_name }}"
+        state: present
+      when:
+        - not db_exists.changed
+        - db_type == "mysql"
+
+    - name: Create PostgreSQL database if it does not exist
+      postgresql_db:
+        name: "{{ db_name }}"
+        state: present
+      when:
+        - not db_exists.changed
+        - db_type == "postgresql"
+
+    - name: Ensure MySQL user exists
+      mysql_user:
+        login_user: "{{ mysql_root_user }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        priv: "{{ db_name }}.*:ALL"
+        state: present
+      when: db_type == "mysql"
+
+    - name: Ensure PostgreSQL user exists
+      postgresql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        db: "{{ db_name }}"
+        priv: "ALL"
+        state: present
+      when: db_type == "postgresql"
+
+    - name: Ensure MySQL database uses utf8mb4_bin collation
+      mysql_db:
+        login_user: "{{ mysql_root_user }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        name: "{{ db_name }}"
+        state: present
+        encoding: utf8mb4
+        collation: utf8mb4_bin
+      when: db_type == "mysql"
+
+    - name: Ensure PostgreSQL database uses utf8mb4_bin collation
+      postgresql_db:
+        name: "{{ db_name }}"
+        encoding: "UTF8"
+        lc_collate: "en_US.utf8"
+        lc_ctype: "en_US.utf8"
+        state: present
+      when: db_type == "postgresql"
+
+    - name: Clone Movim repository
+      git:
+        repo: 'https://github.com/movim/movim.git'
+        dest: "{{ movim_dir }}"
+        version: master
+
+    - name: Run composer install
+      command: composer install
+      args:
+        chdir: "{{ movim_dir }}"
+
+    - name: Create Movim .env file
+      copy:
+        dest: "{{ movim_dir }}/.env"
+        content: |
+          # Database configuration
+          DB_DRIVER={{ db_type }}
+          DB_HOST=localhost
+          DB_PORT=3306
+          DB_DATABASE={{ db_name }}
+          DB_USERNAME={{ db_user }}
+          DB_PASSWORD={{ db_password }}
+
+          # Daemon configuration
+          DAEMON_URL={{ daemon_url }}
+          DAEMON_PORT=8075
+          DAEMON_INTERFACE=127.0.0.1
+          DAEMON_DEBUG=false
+          DAEMON_VERBOSE=false
+
+    - name: Ensure Nginx is installed
+      apt:
+        name: nginx
+        state: present
+      when: web_server == "nginx"
+
+    - name: Ensure Caddy is installed
+      apt:
+        name: caddy
+        state: present
+      when: web_server == "caddy"
+
+    - name: Ensure Apache2 is installed
+      apt:
+        name:
+          - apache2
+          - libapache2-mod-php{{ php_version }}
+        state: present
+      when: web_server == "apache2"
+
+    - name: Configure Nginx for Movim
+      template:
+        src: nginx_movim.conf.j2
+        dest: /etc/nginx/sites-available/movim
+      when: web_server == "nginx"
+
+    - name: Configure Caddy for Movim
+      template:
+        src: caddy_movim.conf.j2
+        dest: /etc/caddy/Caddyfile
+      when: web_server == "caddy"
+
+    - name: Configure Apache2 for Movim
+      template:
+        src: apache2_movim.conf.j2
+        dest: /etc/apache2/sites-available/movim.conf
+      when: web_server == "apache2"
+
+    - name: Enable selected web server site
+      file:
+        src: "{{ 
+          '/etc/nginx/sites-available/movim' if web_server == 'nginx' else
+          '/etc/caddy/Caddyfile' if web_server == 'caddy' else
+          '/etc/apache2/sites-available/movim.conf' 
+        }}"
+        dest: "{{ 
+          '/etc/nginx/sites-enabled/movim' if web_server == 'nginx' else
+          '/etc/caddy/sites-enabled/movim' if web_server == 'caddy' else
+          '/etc/apache2/sites-enabled/movim.conf' 
+        }}"
+        state: link
+      when: web_server in ["nginx", "caddy", "apache2"]
+      notify:
+        - Reload Web Server
+
+    - name: Validate db_type
+      assert:
+        that:
+          - db_type in ['mysql', 'postgresql']
+        fail_msg: "db_type must be either 'mysql' or 'postgresql'."
+
+  handlers:
+    - name: Reload Nginx
+      service:
+        name: nginx
+        state: reloaded
+
+    - name: Reload Web Server
+      service:
+        name: "{{ web_server }}"
+        state: reloaded
