@@ -1,0 +1,57 @@
+
+---
+- name: Configure PostgreSQL
+  block:
+    - name: Ensure PostgreSQL is installed
+      apt:
+        name: postgresql
+        state: present
+
+    - name: Ensure python3-psycopg2 is installed for Ansible PostgreSQL modules
+      apt:
+        name: python3-psycopg2
+        state: present
+
+    - name: Ensure PostgreSQL service is started
+      service:
+        name: postgresql
+        state: started
+
+    - name: Check PostgreSQL service status
+      command: systemctl status postgresql.service
+      register: postgresql_status
+      failed_when: false
+
+    - name: Debug PostgreSQL service status
+      debug:
+        var: postgresql_status.stdout_lines
+
+    - name: Check if PostgreSQL database exists
+      postgresql_db:
+        name: "{{ db_name }}"
+        state: present
+      register: db_exists
+
+    - name: Create PostgreSQL database if it does not exist
+      postgresql_db:
+        name: "{{ db_name }}"
+        state: present
+      when:
+        - not db_exists.changed
+
+    - name: Ensure PostgreSQL user exists
+      postgresql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        db: "{{ db_name }}"
+        priv: "ALL"
+        state: present
+
+    - name: Ensure PostgreSQL database uses utf8mb4_bin collation
+      postgresql_db:
+        name: "{{ db_name }}"
+        encoding: "UTF8"
+        lc_collate: "en_US.utf8"
+        lc_ctype: "en_US.utf8"
+        state: present
+  when: db_type == "postgresql"
