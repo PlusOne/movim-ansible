@@ -48,10 +48,6 @@
       prompt: "Do you want to install the Movim systemd service? (yes/no)"
       private: no
       default: "yes"
-    - name: service_user
-      prompt: "Enter the service user"
-      private: no
-      default: "www-data"
 
   tasks:
     - name: Remove existing Movim directory and drop DB if reinstall
@@ -67,62 +63,122 @@
             state: absent
       when: reinstall | default(false)
 
-    - name: Ensure MySQL is installed
-      apt:
-        name: mysql-server
-        state: present
+    - name: Configure MySQL
+      block:
+        - name: Ensure MySQL is installed
+          apt:
+            name: mysql-server
+            state: present
+
+        - name: Ensure python3-pymysql is installed for Ansible MySQL modules
+          apt:
+            name: python3-pymysql
+            state: present
+
+        - name: Ensure MySQL service is started
+          service:
+            name: mysql
+            state: started
+
+        - name: Check MySQL service status
+          command: systemctl status mysql.service
+          register: mysql_status
+          failed_when: false
+
+        - name: Debug MySQL service status
+          debug:
+            var: mysql_status.stdout_lines
+
+        - name: Check if MySQL database exists
+          mysql_db:
+            login_user: "{{ mysql_root_user }}"
+            login_unix_socket: /var/run/mysqld/mysqld.sock
+            name: "{{ db_name }}"
+            state: present
+          register: db_exists
+
+        - name: Create MySQL database if it does not exist
+          mysql_db:
+            login_user: "{{ mysql_root_user }}"
+            login_unix_socket: /var/run/mysqld/mysqld.sock
+            name: "{{ db_name }}"
+            state: present
+          when:
+            - not db_exists.changed
+
+        - name: Ensure MySQL user exists
+          mysql_user:
+            login_user: "{{ mysql_root_user }}"
+            login_unix_socket: /var/run/mysqld/mysqld.sock
+            name: "{{ db_user }}"
+            password: "{{ db_password }}"
+            priv: "{{ db_name }}.*:ALL"
+            state: present
+
+        - name: Ensure MySQL database uses utf8mb4_bin collation
+          mysql_db:
+            login_user: "{{ mysql_root_user }}"
+            login_unix_socket: /var/run/mysqld/mysqld.sock
+            name: "{{ db_name }}"
+            state: present
+            encoding: utf8mb4
+            collation: utf8mb4_bin
       when: db_type == "mysql"
 
-    - name: Ensure PostgreSQL is installed
-      apt:
-        name: postgresql
-        state: present
-      when: db_type == "postgresql"
+    - name: Configure PostgreSQL
+      block:
+        - name: Ensure PostgreSQL is installed
+          apt:
+            name: postgresql
+            state: present
 
-    - name: Ensure python3-pymysql is installed for Ansible MySQL modules
-      apt:
-        name: python3-pymysql
-        state: present
-      when: db_type == "mysql"
+        - name: Ensure python3-psycopg2 is installed for Ansible PostgreSQL modules
+          apt:
+            name: python3-psycopg2
+            state: present
 
-    - name: Ensure python3-psycopg2 is installed for Ansible PostgreSQL modules
-      apt:
-        name: python3-psycopg2
-        state: present
-      when: db_type == "postgresql"
+        - name: Ensure PostgreSQL service is started
+          service:
+            name: postgresql
+            state: started
 
-    - name: Ensure MySQL service is started
-      service:
-        name: mysql
-        state: started
-      when: db_type == "mysql"
+        - name: Check PostgreSQL service status
+          command: systemctl status postgresql.service
+          register: postgresql_status
+          failed_when: false
 
-    - name: Ensure PostgreSQL service is started
-      service:
-        name: postgresql
-        state: started
-      when: db_type == "postgresql"
+        - name: Debug PostgreSQL service status
+          debug:
+            var: postgresql_status.stdout_lines
 
-    - name: Check MySQL service status
-      command: systemctl status mysql.service
-      register: mysql_status
-      failed_when: false
-      when: db_type == "mysql"
+        - name: Check if PostgreSQL database exists
+          postgresql_db:
+            name: "{{ db_name }}"
+            state: present
+          register: db_exists
 
-    - name: Check PostgreSQL service status
-      command: systemctl status postgresql.service
-      register: postgresql_status
-      failed_when: false
-      when: db_type == "postgresql"
+        - name: Create PostgreSQL database if it does not exist
+          postgresql_db:
+            name: "{{ db_name }}"
+            state: present
+          when:
+            - not db_exists.changed
 
-    - name: Debug MySQL service status
-      debug:
-        var: mysql_status.stdout_lines
-      when: db_type == "mysql"
+        - name: Ensure PostgreSQL user exists
+          postgresql_user:
+            name: "{{ db_user }}"
+            password: "{{ db_password }}"
+            db: "{{ db_name }}"
+            priv: "ALL"
+            state: present
 
-    - name: Debug PostgreSQL service status
-      debug:
-        var: postgresql_status.stdout_lines
+        - name: Ensure PostgreSQL database uses utf8mb4_bin collation
+          postgresql_db:
+            name: "{{ db_name }}"
+            encoding: "UTF8"
+            lc_collate: "en_US.utf8"
+            lc_ctype: "en_US.utf8"
+            state: present
       when: db_type == "postgresql"
 
     - name: Ensure required packages are installed
@@ -144,78 +200,6 @@
           - composer
           - php{{ php_version }}-curl
         state: present
-
-    - name: Check if MySQL database exists
-      mysql_db:
-        login_user: "{{ mysql_root_user }}"
-        login_unix_socket: /var/run/mysqld/mysqld.sock
-        name: "{{ db_name }}"
-        state: present
-      register: db_exists
-      when: db_type == "mysql"
-
-    - name: Check if PostgreSQL database exists
-      postgresql_db:
-        name: "{{ db_name }}"
-        state: present
-      register: db_exists
-      when: db_type == "postgresql"
-
-    - name: Create MySQL database if it does not exist
-      mysql_db:
-        login_user: "{{ mysql_root_user }}"
-        login_unix_socket: /var/run/mysqld/mysqld.sock
-        name: "{{ db_name }}"
-        state: present
-      when:
-        - not db_exists.changed
-        - db_type == "mysql"
-
-    - name: Create PostgreSQL database if it does not exist
-      postgresql_db:
-        name: "{{ db_name }}"
-        state: present
-      when:
-        - not db_exists.changed
-        - db_type == "postgresql"
-
-    - name: Ensure MySQL user exists
-      mysql_user:
-        login_user: "{{ mysql_root_user }}"
-        login_unix_socket: /var/run/mysqld/mysqld.sock
-        name: "{{ db_user }}"
-        password: "{{ db_password }}"
-        priv: "{{ db_name }}.*:ALL"
-        state: present
-      when: db_type == "mysql"
-
-    - name: Ensure PostgreSQL user exists
-      postgresql_user:
-        name: "{{ db_user }}"
-        password: "{{ db_password }}"
-        db: "{{ db_name }}"
-        priv: "ALL"
-        state: present
-      when: db_type == "postgresql"
-
-    - name: Ensure MySQL database uses utf8mb4_bin collation
-      mysql_db:
-        login_user: "{{ mysql_root_user }}"
-        login_unix_socket: /var/run/mysqld/mysqld.sock
-        name: "{{ db_name }}"
-        state: present
-        encoding: utf8mb4
-        collation: utf8mb4_bin
-      when: db_type == "mysql"
-
-    - name: Ensure PostgreSQL database uses utf8mb4_bin collation
-      postgresql_db:
-        name: "{{ db_name }}"
-        encoding: "UTF8"
-        lc_collate: "en_US.utf8"
-        lc_ctype: "en_US.utf8"
-        state: present
-      when: db_type == "postgresql"
 
     - name: Clone Movim repository
       git:

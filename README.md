@@ -18,6 +18,7 @@ During the execution of the playbook, you will be prompted to enter the followin
 - `domain_name`: The domain name for Nginx.
 - `web_server`: Select the web server to use (`nginx`, `caddy`, `apache2`).
 - `backend_port`: The port number for the backend service (default: `8075`).
+- `install_service`: Do you want to install the Movim systemd service? (`yes` or `no`)
 
 ## Installation
 
@@ -55,6 +56,7 @@ During the execution of the playbook, you will be prompted to enter the followin
    - **domain_name:** Specify the domain name for Nginx configuration.
    - **web_server:** Select the web server (`nginx`, `caddy`, `apache2`) you wish to use.
    - **backend_port:** Enter the port number for the backend service (default: `8075`).
+   - **install_service:** Do you want to install the Movim systemd service? (`yes` or `no`)
 
 3. **Run Database Migrations:**
    After the playbook completes, navigate to the Movim directory and run the migrations:
@@ -64,11 +66,15 @@ During the execution of the playbook, you will be prompted to enter the followin
    ```
 
 4. **(Optional) Install Movim Systemd Service:**
-   If you chose to install the systemd service during the playbook execution, the service will be enabled and started automatically. You can manage the service using:
+   If you chose to install the systemd service during the playbook execution, the service will be enabled and started automatically. The default service user is `www-data`. You can manage the service using:
    ```bash
    sudo systemctl start movim
    sudo systemctl enable movim
    sudo systemctl status movim
+   ```
+   *To override the default service user, you can run the playbook with an extra variable:*
+   ```bash
+   ansible-playbook -i inventory.yaml playbook.yml --extra-vars "service_user=your_user"
    ```
 
 5. **Access Movim:**
