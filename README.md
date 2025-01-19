@@ -43,6 +43,35 @@ During the execution of the playbook, you will be prompted to enter the followin
    ansible-playbook -i inventory.yaml playbook.yml --connection=local
    ```
 
+## Configuration
+
+### Database Selection
+
+Choose the database type by setting the `db_type` variable during the playbook execution. Supported options are `mysql` and `postgresql`.
+
+```bash
+ansible-playbook -i "localhost," -c local playbook.yml
+```
+
+You will be prompted to select the database type:
+
+```
+Select Database Type (mysql/postgresql) [mysql]:
+```
+
+- **MySQL**: Sets up the MySQL database and related configurations.
+- **PostgreSQL**: Sets up the PostgreSQL database and related configurations using the separate `configure_postgresql.yml` task file.
+
+### Web Server Selection
+
+Select your preferred web server (`nginx`, `caddy`, or `apache2`) during the playbook execution:
+
+```
+Select Web Server (nginx/caddy/apache2) [nginx]:
+```
+
+The playbook will configure the selected web server accordingly.
+
 ## Usage
 
 1. **Run the Playbook:**
