@@ -8,10 +8,9 @@
     db_user: movim_user
     db_password: secure_password
     movim_dir: /var/www/movim
-    reinstall: false
     php_version: 8.1
-    install_service: true
     service_user: www-data
+    domain_name: example.com  # Added default domain name
 
   vars_prompt:
     - name: daemon_url
