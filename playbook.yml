@@ -28,9 +28,6 @@
     - name: mysql_root_password
       prompt: "Enter MySQL root password"
       private: yes
-    # - name: domain_name
-    #   prompt: "Enter the domain name for Nginx"
-    #   private: no
     - name: web_server
       prompt: "Select Web Server (nginx/caddy/apache2)"
       private: no
