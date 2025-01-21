@@ -59,66 +59,7 @@
             state: absent
       when: reinstall | default(false)
 
-    - name: Configure MySQL
-      block:
-        - name: Ensure MySQL is installed
-          apt:
-            name: mysql-server
-            state: present
-
-        - name: Ensure python3-pymysql is installed for Ansible MySQL modules
-          apt:
-            name: python3-pymysql
-            state: present
-
-        - name: Ensure MySQL service is started
-          service:
-            name: mysql
-            state: started
-
-        - name: Check MySQL service status
-          command: systemctl status mysql.service
-          register: mysql_status
-          failed_when: false
-
-        - name: Debug MySQL service status
-          debug:
-            var: mysql_status.stdout_lines
-
-        - name: Check if MySQL database exists
-          mysql_db:
-            login_user: "{{ mysql_root_user }}"
-            login_unix_socket: /var/run/mysqld/mysqld.sock
-            name: "{{ db_name }}"
-            state: present
-          register: db_exists
-
-        - name: Create MySQL database if it does not exist
-          mysql_db:
-            login_user: "{{ mysql_root_user }}"
-            login_unix_socket: /var/run/mysqld/mysqld.sock
-            name: "{{ db_name }}"
-            state: present
-          when:
-            - not db_exists.changed
-
-        - name: Ensure MySQL user exists
-          mysql_user:
-            login_user: "{{ mysql_root_user }}"
-            login_unix_socket: /var/run/mysqld/mysqld.sock
-            name: "{{ db_user }}"
-            password: "{{ db_password }}"
-            priv: "{{ db_name }}.*:ALL"
-            state: present
-
-        - name: Ensure MySQL database uses utf8mb4_bin collation
-          mysql_db:
-            login_user: "{{ mysql_root_user }}"
-            login_unix_socket: /var/run/mysqld/mysqld.sock
-            name: "{{ db_name }}"
-            state: present
-            encoding: utf8mb4
-            collation: utf8mb4_bin
+    - include_tasks: configure_mysql.yml
       when: db_type == "mysql"
 
     - include_tasks: configure_postgresql.yml
