@@ -58,7 +58,7 @@ You will be prompted to select the database type:
 Select Database Type (mysql/postgresql) [mysql]:
 ```
 
-- **MySQL**: Sets up the MySQL database and related configurations.
+- **MySQL**: Sets up the MySQL database and related configurations using the separate `configure_mysql.yml` task file.
 - **PostgreSQL**: Sets up the PostgreSQL database and related configurations using the separate `configure_postgresql.yml` task file.
 
 ### Web Server Selection
