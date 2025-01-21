@@ -199,15 +199,25 @@
       when: install_service | default(false)
 
   handlers:
-    - name: Reload Nginx
-      service:
-        name: nginx
-        state: reloaded
-
     - name: Reload Web Server
-      service:
-        name: "{{ web_server }}"
-        state: reloaded
+      block:
+        - name: Reload Nginx
+          service:
+            name: nginx
+            state: reloaded
+          when: web_server == "nginx"
+
+        - name: Reload Caddy
+          service:
+            name: caddy
+            state: reloaded
+          when: web_server == "caddy"
+
+        - name: Reload Apache2
+          service:
+            name: apache2
+            state: reloaded
+          when: web_server == "apache2"
 
     - name: Restart Movim Service
       service:

@@ -110,5 +110,10 @@ The playbook will configure the selected web server accordingly.
 ## Handlers
 The playbook includes handlers to reload the selected web server after configuration changes.
 
+- **Nginx**: Reloads Nginx if selected.
+- **Caddy**: Reloads Caddy if selected.
+- **Apache2**: Reloads Apache2 if selected.
+- **Movim Service**: Restarts the Movim service if installation was chosen.
+
 ## License
 This project is licensed under the MIT License.
