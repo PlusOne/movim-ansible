@@ -69,6 +69,11 @@
             state: absent
       when: reinstall | default(false)
 
+    - name: Purge Movim destination directory
+      file:
+        path: "{{ movim_dir }}"
+        state: absent
+
     - include_tasks: configure_mysql.yml
       when: db_type == "mysql"
 
