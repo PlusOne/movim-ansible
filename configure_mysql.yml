@@ -28,6 +28,7 @@
     - name: Check if MySQL database exists
       mysql_db:
         login_user: "{{ mysql_root_user }}"
+        login_password: "{{ mysql_root_password }}"
         login_unix_socket: /var/run/mysqld/mysqld.sock
         name: "{{ db_name }}"
         state: present
@@ -36,6 +37,7 @@
     - name: Create MySQL database if it does not exist
       mysql_db:
         login_user: "{{ mysql_root_user }}"
+        login_password: "{{ mysql_root_password }}"
         login_unix_socket: /var/run/mysqld/mysqld.sock
         name: "{{ db_name }}"
         state: present
@@ -45,6 +47,7 @@
     - name: Ensure MySQL user exists
       mysql_user:
         login_user: "{{ mysql_root_user }}"
+        login_password: "{{ mysql_root_password }}"
         login_unix_socket: /var/run/mysqld/mysqld.sock
         name: "{{ movim_db_user }}"
         password: "{{ movim_db_password }}"
