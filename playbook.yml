@@ -10,6 +10,7 @@
     php_version: 8.1
     service_user: www-data
     domain_name: example.com
+    db_driver: "{{ db_type }}"
 
   vars_prompt:
     - name: daemon_url
