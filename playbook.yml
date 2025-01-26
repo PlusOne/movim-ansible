@@ -118,8 +118,8 @@
           DB_HOST=localhost
           DB_PORT=3306
           DB_DATABASE={{ db_name }}
-          DB_USERNAME={{ db_user }}
-          DB_PASSWORD={{ db_password }}
+          DB_USERNAME={{ movim_db_user }}
+          DB_PASSWORD={{ movim_db_password }}
 
           # Daemon configuration
           DAEMON_URL={{ daemon_url }}
