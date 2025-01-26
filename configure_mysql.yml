@@ -44,22 +44,26 @@
       when:
         - not db_exists.changed
 
-    - name: Ensure MySQL user exists
-      mysql_user:
+    - name: Ensure MySQL database is created
+      mysql_db:
+        name: "{{ db_name }}"
+        state: present
         login_user: "{{ mysql_root_user }}"
         login_password: "{{ mysql_root_password }}"
-        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Ensure MySQL user has necessary privileges
+      mysql_user:
         name: "{{ movim_db_user }}"
         password: "{{ movim_db_password }}"
         priv: "{{ db_name }}.*:ALL"
         state: present
+        login_user: "{{ mysql_root_user }}"
+        login_password: "{{ mysql_root_password }}"
 
     - name: Ensure MySQL database uses utf8mb4_bin collation
       mysql_db:
-        login_user: "{{ movim_db_user }}"
-        login_password: "{{ movim_db_password }}"
-        login_unix_socket: /var/run/mysqld/mysqld.sock
         name: "{{ db_name }}"
-        state: present
-        encoding: utf8mb4
         collation: utf8mb4_bin
+        state: present
+        login_user: "{{ mysql_root_user }}"
+        login_password: "{{ mysql_root_password }}"
