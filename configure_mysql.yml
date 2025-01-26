@@ -50,6 +50,7 @@
         state: present
         login_user: "{{ mysql_root_user }}"
         login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
 
     - name: Ensure MySQL user has necessary privileges
       mysql_user:
@@ -59,6 +60,7 @@
         state: present
         login_user: "{{ mysql_root_user }}"
         login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
 
     - name: Ensure MySQL database uses utf8mb4_bin collation
       mysql_db:
@@ -67,3 +69,4 @@
         state: present
         login_user: "{{ mysql_root_user }}"
         login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
