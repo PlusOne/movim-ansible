@@ -90,6 +90,7 @@
         repo: 'https://github.com/movim/movim.git'
         dest: "{{ movim_dir }}"
         version: master
+        force: yes
 
     - name: Run composer install
       command: composer install
