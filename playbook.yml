@@ -121,6 +121,10 @@
       args:
         chdir: "{{ movim_dir }}"
 
+    - name: Debug copy_env_file variable
+      debug:
+        msg: "copy_env_file is set to {{ copy_env_file }}"
+
     - name: Copy and update Movim .env file (conditional)
       template:
         src: templates/.env.example.j2
@@ -141,6 +145,15 @@
           daemon_debug: "false"
           daemon_verbose: "false"
       when: copy_env_file == "yes"
+
+    - name: Debug .env file creation
+      stat:
+        path: "{{ movim_dir }}/.env"
+      register: env_file
+
+    - name: Debug .env file status
+      debug:
+        var: env_file
 
     - name: Ensure Nginx is installed
       apt:
