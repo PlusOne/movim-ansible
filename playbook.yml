@@ -78,6 +78,10 @@
         path: "{{ movim_dir }}"
         state: absent
 
+    - name: Debug db_type variable
+      debug:
+        msg: "db_type is set to {{ db_type }}"
+
     - include_tasks: configure_mysql.yml
       when: db_type == "mysql"
 
@@ -116,11 +120,6 @@
       args:
         chdir: "{{ movim_dir }}"
 
-    - name: Run Movim database migrations
-      command: composer movim:migrate
-      args:
-        chdir: "{{ movim_dir }}"
-
     - name: Debug copy_env_file variable
       debug:
         msg: "copy_env_file is set to {{ copy_env_file }}"
@@ -154,6 +153,12 @@
     - name: Debug .env file status
       debug:
         var: env_file
+
+    - name: Run Movim database migrations
+      command: composer movim:migrate
+      args:
+        chdir: "{{ movim_dir }}"
+      when: db_type == "mysql"
 
     - name: Ensure Nginx is installed
       apt:
