@@ -28,6 +28,13 @@
     - name: mysql_root_password
       prompt: "Enter MySQL root password"
       private: yes
+    - name: movim_db_user
+      prompt: "Enter the Movim database username"
+      private: no
+      default: "movim_user"
+    - name: movim_db_password
+      prompt: "Enter the Movim database password"
+      private: yes
     - name: web_server
       prompt: "Select Web Server (nginx/caddy/apache2)"
       private: no
