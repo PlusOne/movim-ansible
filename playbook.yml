@@ -119,7 +119,7 @@
 
     - name: Copy and update Movim .env file
       template:
-        src: templates/.env.example
+        src: templates/.env.example.j2
         dest: "{{ movim_dir }}/.env"
         mode: '0644'
         owner: "{{ service_user }}"
