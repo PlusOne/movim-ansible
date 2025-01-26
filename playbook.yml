@@ -9,7 +9,7 @@
     db_password: secure_password
     php_version: 8.1
     service_user: www-data
-    domain_name: example.com  # Added default domain name
+    domain_name: example.com
 
   vars_prompt:
     - name: daemon_url
@@ -54,6 +54,10 @@
       prompt: "Enter the destination directory for Movim"
       private: no
       default: "/var/www/movim"
+    - name: copy_env_file
+      prompt: "After pulling the latest code from Movim, do you want to copy .env.example.j2 to .env? (yes/no)"
+      private: no
+      default: "yes"
 
   tasks:
     - name: Remove existing Movim directory and drop DB if reinstall
@@ -117,7 +121,7 @@
       args:
         chdir: "{{ movim_dir }}"
 
-    - name: Copy and update Movim .env file
+    - name: Copy and update Movim .env file (conditional)
       template:
         src: templates/.env.example.j2
         dest: "{{ movim_dir }}/.env"
@@ -136,6 +140,7 @@
           daemon_interface: "{{ backend_ip }}"
           daemon_debug: "false"
           daemon_verbose: "false"
+      when: copy_env_file == "yes"
 
     - name: Ensure Nginx is installed
       apt:
