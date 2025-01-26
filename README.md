@@ -21,6 +21,7 @@ During the execution of the playbook, you will be prompted to enter the followin
 - `backend_ip`: The IP address for the backend service (default: `127.0.0.1`).
 - `backend_port`: The port number for the backend service (default: `8075`).
 - `install_service`: Do you want to install the Movim systemd service? (`yes` or `no`)
+- `copy_env_file`: Do you want to copy .env.example.j2 to .env after pulling the latest code from Movim? (`yes` or `no`)
 
 ## Installation
 
@@ -90,6 +91,7 @@ The playbook will configure the selected web server accordingly.
    - **backend_ip:** Enter the IP address for the backend service (default: `127.0.0.1`).
    - **backend_port:** Enter the port number for the backend service (default: `8075`).
    - **install_service:** Do you want to install the Movim systemd service? (`yes` or `no`)
+   - **copy_env_file:** Do you want to copy .env.example.j2 to .env after pulling the latest code from Movim? (`yes` or `no`)
 
 3. **Run Database Migrations:**
    After the playbook completes, navigate to the Movim directory and run the migrations:
