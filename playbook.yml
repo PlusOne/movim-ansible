@@ -117,24 +117,25 @@
       args:
         chdir: "{{ movim_dir }}"
 
-    - name: Create Movim .env file
-      copy:
+    - name: Copy and update Movim .env file
+      template:
+        src: .env.example
         dest: "{{ movim_dir }}/.env"
-        content: |
-          # Database configuration
-          DB_DRIVER={{ db_type }}
-          DB_HOST=localhost
-          DB_PORT=3306
-          DB_DATABASE={{ db_name }}
-          DB_USERNAME={{ movim_db_user }}
-          DB_PASSWORD={{ movim_db_password }}
-
-          # Daemon configuration
-          DAEMON_URL={{ daemon_url }}
-          DAEMON_PORT=8075
-          DAEMON_INTERFACE=127.0.0.1
-          DAEMON_DEBUG=false
-          DAEMON_VERBOSE=false
+        mode: '0644'
+        owner: "{{ service_user }}"
+        group: "{{ service_user }}"
+        vars:
+          db_driver: "{{ db_type }}"
+          db_host: "localhost"
+          db_port: "{{ '3306' if db_type == 'mysql' else '5432' }}"
+          db_database: "{{ db_name }}"
+          db_username: "{{ movim_db_user }}"
+          db_password: "{{ movim_db_password }}"
+          daemon_url: "{{ daemon_url }}"
+          daemon_port: "{{ backend_port }}"
+          daemon_interface: "{{ backend_ip }}"
+          daemon_debug: "false"
+          daemon_verbose: "false"
 
     - name: Ensure Nginx is installed
       apt:
