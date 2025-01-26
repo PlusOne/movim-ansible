@@ -7,7 +7,6 @@
     db_name: movim_db
     db_user: movim_user
     db_password: secure_password
-    movim_dir: /var/www/movim
     php_version: 8.1
     service_user: www-data
     domain_name: example.com  # Added default domain name
@@ -51,6 +50,10 @@
       prompt: "Do you want to install the Movim systemd service? (yes/no)"
       private: no
       default: "yes"
+    - name: movim_dir
+      prompt: "Enter the destination directory for Movim"
+      private: no
+      default: "/var/www/movim"
 
   tasks:
     - name: Remove existing Movim directory and drop DB if reinstall
