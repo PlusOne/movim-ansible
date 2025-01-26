@@ -12,6 +12,7 @@
     domain_name: example.com
     db_driver: "{{ db_type }}"
     db_host: "localhost"  # Add this line
+    db_port: "{{ '3306' if db_type == 'mysql' else '5432' }}"  # Add this line
 
   vars_prompt:
     - name: daemon_url
