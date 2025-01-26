@@ -15,7 +15,10 @@ During the execution of the playbook, you will be prompted to enter the followin
 - `db_type`: Select the database type (`mysql` or `postgresql`).
 - `mysql_root_user`: MySQL root username (default: `root`).
 - `mysql_root_password`: MySQL root password.
+- `movim_db_user`: Movim database username.
+- `movim_db_password`: Movim database password.
 - `web_server`: Select the web server to use (`nginx`, `caddy`, `apache2`).
+- `backend_ip`: The IP address for the backend service (default: `127.0.0.1`).
 - `backend_port`: The port number for the backend service (default: `8075`).
 - `install_service`: Do you want to install the Movim systemd service? (`yes` or `no`)
 
@@ -81,7 +84,10 @@ The playbook will configure the selected web server accordingly.
    - **db_type:** Choose between `mysql` or `postgresql`.
    - **mysql_root_user:** Enter the MySQL root username.
    - **mysql_root_password:** Enter the MySQL root password.
+   - **movim_db_user:** Enter the Movim database username.
+   - **movim_db_password:** Enter the Movim database password.
    - **web_server:** Select the web server (`nginx`, `caddy`, `apache2`) you wish to use.
+   - **backend_ip:** Enter the IP address for the backend service (default: `127.0.0.1`).
    - **backend_port:** Enter the port number for the backend service (default: `8075`).
    - **install_service:** Do you want to install the Movim systemd service? (`yes` or `no`)
 
