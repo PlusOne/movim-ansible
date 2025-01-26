@@ -11,6 +11,7 @@
     service_user: www-data
     domain_name: example.com
     db_driver: "{{ db_type }}"
+    db_host: "localhost"  # Add this line
 
   vars_prompt:
     - name: daemon_url
