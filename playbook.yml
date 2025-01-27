@@ -18,6 +18,7 @@
     daemon_port: "{{ backend_port }}"  # Add this line
     daemon_interface: "{{ backend_ip }}"  # Add this line
     daemon_debug: "false"  # Add this line
+    daemon_verbose: "false"  # Add this line
 
   vars_prompt:
     - name: daemon_url
