@@ -16,6 +16,7 @@
     db_database: "{{ db_name }}"  # Add this line
     db_username: "{{ movim_db_user }}"  # Add this line
     daemon_port: "{{ backend_port }}"  # Add this line
+    daemon_interface: "{{ backend_ip }}"  # Add this line
 
   vars_prompt:
     - name: daemon_url
