@@ -14,6 +14,7 @@
     db_host: "localhost"  # Add this line
     db_port: "{{ '3306' if db_type == 'mysql' else '5432' }}"  # Add this line
     db_database: "{{ db_name }}"  # Add this line
+    db_username: "{{ movim_db_user }}"  # Add this line
 
   vars_prompt:
     - name: daemon_url
