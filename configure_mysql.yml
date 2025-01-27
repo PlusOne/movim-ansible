@@ -57,6 +57,7 @@
         name: "{{ movim_db_user }}"
         password: "{{ movim_db_password }}"
         priv: "{{ db_name }}.*:ALL"
+        host: "{{ db_host | default('localhost') }}"
         state: present
         login_user: "{{ mysql_root_user }}"
         login_password: "{{ mysql_root_password }}"
