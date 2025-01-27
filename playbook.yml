@@ -134,12 +134,24 @@
         msg: "copy_env_file is set to {{ copy_env_file }}"
 
     - name: Copy and update Movim .env file (conditional)
-      copy:
+      template:
         src: templates/.env.example.j2  # Ensure this path is correct
         dest: "{{ movim_dir }}/.env"
         mode: '0644'
         owner: "{{ service_user }}"
         group: "{{ service_user }}"
+        vars:
+          db_driver: "{{ db_type }}"
+          db_host: "{{ db_host }}"
+          db_port: "{{ db_port }}"
+          db_database: "{{ db_name }}"
+          db_username: "{{ movim_db_user }}"
+          db_password: "{{ movim_db_password }}"
+          daemon_url: "{{ daemon_url }}"
+          daemon_port: "{{ backend_port }}"
+          daemon_interface: "{{ backend_ip }}"
+          daemon_debug: "false"
+          daemon_verbose: "false"
       when: copy_env_file == "yes"
 
     - name: Debug .env file creation
