@@ -133,9 +133,9 @@
       debug:
         msg: "copy_env_file is set to {{ copy_env_file }}"
 
-    - name: Copy and update Movim .env file (conditional)
-      template:
-        src: templates/.env.example.j2  # Ensure this path is correct
+    - name: Render Movim .env file (conditional)
+      ansible.builtin.template:
+        src: templates/.env.example.j2
         dest: "{{ movim_dir }}/.env"
         mode: '0644'
         owner: "{{ service_user }}"
