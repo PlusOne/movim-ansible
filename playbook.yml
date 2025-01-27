@@ -1,5 +1,5 @@
 ---
-- name: Install Movim XMPP HTTP responsive client 
+- name: Install Movim XMPP HTTP responsive client
   hosts: all
   become: yes
 
