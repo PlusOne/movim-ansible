@@ -129,15 +129,15 @@
 
     - name: Copy and update Movim .env file (conditional)
       template:
-        src: templates/.env.example.j2
+        src: templates/.env.example.j2  # Ensure this path is correct
         dest: "{{ movim_dir }}/.env"
         mode: '0644'
         owner: "{{ service_user }}"
         group: "{{ service_user }}"
         vars:
           db_driver: "{{ db_type }}"
-          db_host: "localhost"
-          db_port: "{{ '3306' if db_type == 'mysql' else '5432' }}"
+          db_host: "{{ db_host }}"  # Ensure this variable is defined
+          db_port: "{{ db_port }}"  # Ensure this variable is defined
           db_database: "{{ db_name }}"
           db_username: "{{ movim_db_user }}"
           db_password: "{{ movim_db_password }}"
