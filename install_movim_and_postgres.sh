@@ -15,10 +15,14 @@ if [ ! -d "$MOVIM_DIR" ]; then
     exit 1
 fi
 
-# Verify that PostgreSQL service is running
+# Verify that PostgreSQL service is running, attempt to start if not
 if ! systemctl is-active --quiet postgresql; then
-    echo "PostgreSQL service is not running. Please start it before proceeding."
-    exit 1
+    echo "PostgreSQL service is not running. Attempting to start it..."
+    systemctl start postgresql
+    if ! systemctl is-active --quiet postgresql; then
+         echo "Failed to start PostgreSQL service. Please start it manually."
+         exit 1
+    fi
 fi
 
 # Check for .env file and load DB settings
