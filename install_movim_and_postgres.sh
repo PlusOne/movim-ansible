@@ -28,12 +28,14 @@ fi
 # Check for .env file and generate it if missing
 if [ ! -f "$ENV_FILE" ]; then
     echo ".env file not found in $MOVIM_DIR. Generating .env file from template..."
-    # Set default values; these can be overridden by exporting before running the script
-    export DB_DRIVER=${DB_DRIVER:-pgsql}
-    export DB_HOST=${DB_HOST:-localhost}
-    export DB_DATABASE=${DB_DATABASE:-movim_db}
-    export DB_USERNAME=${DB_USERNAME:-movim}
-    export DB_PASSWORD=${DB_PASSWORD:-your_postgres_password}
+    # Force default values (override any externally set variables)
+    export DB_DRIVER="pgsql"
+    export DB_HOST="localhost"
+    export DB_DATABASE="movim_db"
+    export DB_USERNAME="movim"
+    if [ -z "$DB_PASSWORD" ]; then
+        export DB_PASSWORD="your_postgres_password"
+    fi
     envsubst < /home/renz/source/movim-ansible/templates/env_movim_psql.j2 > "$ENV_FILE"
     echo ".env generated as:"
     cat "$ENV_FILE"
