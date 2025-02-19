@@ -7,7 +7,7 @@
     db_name: movim_db
     db_user: movim_user
     db_password: secure_password
-    php_version: 8.1
+    php_version: 8.4
     service_user: www-data
     domain_name: example.com
     db_driver: "{{ db_type }}"
