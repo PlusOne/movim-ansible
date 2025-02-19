@@ -175,6 +175,13 @@
         /usr/bin/env COMPOSER_ALLOW_SUPERUSER=1 /usr/bin/composer movim:migrate
       args:
         chdir: "{{ movim_dir }}"
+      environment:
+        DB_DRIVER: "{{ db_driver }}"
+        DB_HOST: "{{ db_host }}"
+        DB_PORT: "{{ db_port }}"
+        DB_DATABASE: "{{ db_database }}"
+        DB_USERNAME: "{{ db_username }}"
+        DB_PASSWORD: "{{ db_password }}"
       when: db_type == "mysql"
 
     - name: Ensure Nginx is installed
