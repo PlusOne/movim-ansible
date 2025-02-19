@@ -1,0 +1,122 @@
+---
+- name: Deploy Movim on Debian/Ubuntu
+  hosts: all
+  become: true
+  vars:
+    movim_dir: /var/www/movim
+    service_user: www-data
+    php_version: "8.1"          # Adjust the PHP version as needed
+    mysql_package: mysql-server # Ensure version 5.7+ is installed
+    repo_url: "https://github.com/movim/movim.git"
+    db_name: movim_db
+    db_encoding: utf8mb4
+    db_collation: utf8mb4_bin
+  tasks:
+    # Step 1: Install necessary packages (PHP modules, MySQL, Git, Composer)
+    - name: Install required packages
+      apt:
+        name:
+          - "{{ mysql_package }}"
+          - "php{{ php_version }}-fpm"
+          - "php{{ php_version }}-curl"
+          - "php{{ php_version }}-mbstring"
+          - "php{{ php_version }}-imagick"
+          - "php{{ php_version }}-gd"
+          - "php{{ php_version }}-xml"
+          - git
+          - composer
+        state: present
+        update_cache: yes
+      # Refer to Movim docs: "Install required PHP and MySQL packages"
+    
+    # Step 2: Configure MySQL database with utf8mb4 and utf8mb4_bin collation
+    - name: Create and configure MySQL database for Movim
+      mysql_db:
+        name: "{{ db_name }}"
+        state: present
+        encoding: "{{ db_encoding }}"
+        collation: "{{ db_collation }}"
+        login_user: root
+        login_password: ""  # Update with proper root password if needed
+      # Movim docs: "Ensure database is created with utf8mb4 and utf8mb4_bin"
+    
+    # Step 3: Create Movim working directory and set ownership
+    - name: Create Movim working directory
+      file:
+        path: "{{ movim_dir }}"
+        state: directory
+        owner: "{{ service_user }}"
+        group: "{{ service_user }}"
+        mode: '0755'
+      # Movim docs: "Create working directory (/var/www/movim) with correct permissions"
+    
+    # Step 4: Clone the Movim repository from GitHub
+    - name: Clone Movim repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ movim_dir }}"
+        version: master
+        force: yes
+      # Movim docs: "Clone repository from GitHub"
+    
+    # Step 5: Create necessary directories (cache, log, public/cache) with proper permissions
+    - name: Create required subdirectories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ service_user }}"
+        group: "{{ service_user }}"
+        mode: '0755'
+      loop:
+        - "{{ movim_dir }}/cache"
+        - "{{ movim_dir }}/log"
+        - "{{ movim_dir }}/public/cache"
+      # Movim docs: "Ensure directories for cache, log, etc. are created"
+    
+    # Step 6: Install Composer dependencies
+    - name: Run composer install to install Movim dependencies
+      shell: /usr/bin/env COMPOSER_ALLOW_SUPERUSER=1 composer install
+      args:
+        chdir: "{{ movim_dir }}"
+      # Movim docs: "Run composer install"
+    
+    # Step 7: Copy .env.example to .env for configuration
+    - name: Copy .env.example to .env
+      copy:
+        src: "{{ movim_dir }}/.env.example"
+        dest: "{{ movim_dir }}/.env"
+        owner: "{{ service_user }}"
+        group: "{{ service_user }}"
+        mode: '0644'
+      # Note: Manually update .env or use variables as needed (see Movim docs)
+    
+    # Step 8: Run Movim database migrations
+    - name: Run Movim database migrations
+      shell: /usr/bin/env COMPOSER_ALLOW_SUPERUSER=1 composer movim:migrate
+      args:
+        chdir: "{{ movim_dir }}"
+      # Movim docs: "Run migrations using composer movim:migrate"
+    
+    # Step 9: Create systemd service file to start the Movim daemon
+    - name: Create systemd service file for Movim daemon
+      copy:
+        dest: /etc/systemd/system/movim.service
+        content: |
+          [Unit]
+          Description=Movim XMPP HTTP Responsive Client
+          After=network.target
+          
+          [Service]
+          Type=simple
+          User={{ service_user }}
+          WorkingDirectory={{ movim_dir }}
+          ExecStart=/usr/bin/env php artisan serve --host=0.0.0.0 --port=8000
+          Restart=always
+          
+          [Install]
+          WantedBy=multi-user.target
+      notify: Reload systemd
+      # Movim docs: "Provide instructions for starting the Movim daemon"
+  handlers:
+    - name: Reload systemd
+      command: systemctl daemon-reload
