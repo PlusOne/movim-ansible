@@ -134,7 +134,8 @@
         force: yes
 
     - name: Run composer install
-      shell: COMPOSER_ALLOW_SUPERUSER=1 composer install
+      shell: |
+        /usr/bin/env COMPOSER_ALLOW_SUPERUSER=1 /usr/bin/composer install
       args:
         chdir: "{{ movim_dir }}"
 
