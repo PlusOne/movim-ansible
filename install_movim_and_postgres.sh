@@ -25,11 +25,23 @@ if ! systemctl is-active --quiet postgresql; then
     fi
 fi
 
-# Check for .env file and load DB settings
+# Check for .env file and generate it if missing
+if [ ! -f "$ENV_FILE" ]; then
+    echo ".env file not found in $MOVIM_DIR. Generating .env file from template..."
+    # Set default values; these can be overridden by exporting before running the script
+    export DB_DRIVER=${DB_DRIVER:-pgsql}
+    export DB_HOST=${DB_HOST:-localhost}
+    export DB_DATABASE=${DB_DATABASE:-movim_db}
+    export DB_USERNAME=${DB_USERNAME:-movim}
+    export DB_PASSWORD=${DB_PASSWORD:-your_postgres_password}
+    envsubst < /home/renz/source/movim-ansible/templates/env_movim_psql.j2 > "$ENV_FILE"
+fi
+
+# Load DB settings from .env
 if [ -f "$ENV_FILE" ]; then
     source "$ENV_FILE"
 else
-    echo ".env file not found in $MOVIM_DIR. Please configure it before proceeding."
+    echo "Failed to generate .env file in $MOVIM_DIR."
     exit 1
 fi
 
