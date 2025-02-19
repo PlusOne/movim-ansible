@@ -56,6 +56,17 @@
         login_unix_socket: /var/run/mysqld/mysqld.sock
       # Tutorial reference: “MySQL 5.7+ with utf8mb4 encoding and utf8mb4_bin collation.”
 
+    - name: Create MySQL user for Movim
+      mysql_user:
+        name: "{{ movim_db_user }}"
+        password: "{{ movim_db_password }}"
+        priv: "{{ db_name }}.*:ALL"
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      # This task ensures the DB user has the necessary privileges.
+
     # 3. Create the Movim working directory and set ownership.
     - name: Create Movim working directory
       file:
