@@ -12,9 +12,18 @@
     db_collation: utf8mb4_bin
     domain_name: example.com    # change as needed
     web_server: nginx
+    db_driver: mysql
+    db_host: "localhost"
   vars_prompt:
     - name: mysql_root_password
       prompt: "Enter MySQL root password"
+      private: yes
+    - name: movim_db_user
+      prompt: "Enter Movim database username"
+      private: no
+      default: "movim"
+    - name: movim_db_password
+      prompt: "Enter Movim database password"
       private: yes
   tasks:
     # 1. Install necessary packages for PHP, MySQL and Nginx.
@@ -87,10 +96,10 @@
         chdir: "{{ movim_dir }}"
       # Tutorial ref: "Run Composer install."
 
-    # 7. Copy .env.example to .env for configuration.
-    - name: Copy .env.example to .env
-      copy:
-        src: "{{ movim_dir }}/.env.example"
+    # 7. Template .env file for configuration.
+    - name: Template .env file for Movim configuration
+      template:
+        src: env_movim.j2
         dest: "{{ movim_dir }}/.env"
         owner: "{{ service_user }}"
         group: "{{ service_user }}"
@@ -103,7 +112,11 @@
       args:
         chdir: "{{ movim_dir }}"
       environment:
-        DB_DRIVER: "mysql"   # Force MySQL adapter
+        DB_DRIVER: "{{ db_driver }}"
+        DB_HOST: "{{ db_host }}"
+        DB_DATABASE: "{{ db_name }}"
+        DB_USERNAME: "{{ movim_db_user }}"
+        DB_PASSWORD: "{{ movim_db_password }}"
       # Tutorial ref: "Run composer movim:migrate to update the database."
 
     # 9. Deploy Nginx configuration.
