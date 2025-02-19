@@ -102,6 +102,8 @@
       shell: /usr/bin/env COMPOSER_ALLOW_SUPERUSER=1 composer movim:migrate
       args:
         chdir: "{{ movim_dir }}"
+      environment:
+        DB_DRIVER: "mysql"   # Force MySQL adapter
       # Tutorial ref: "Run composer movim:migrate to update the database."
 
     # 9. Deploy Nginx configuration.
