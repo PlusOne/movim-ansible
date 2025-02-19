@@ -25,7 +25,16 @@ if ! systemctl is-active --quiet postgresql; then
     fi
 fi
 
-# Check for .env file and generate it if missing
+# Check for .env file and prompt to overwrite if it exists
+if [ -f "$ENV_FILE" ]; then
+    read -p ".env file exists in $MOVIM_DIR. Overwrite? (y/N): " overwrite_env
+    if [[ "$overwrite_env" =~ ^[Yy]$ ]]; then
+        rm "$ENV_FILE"
+    else
+        echo "Using existing .env file."
+    fi
+fi
+
 if [ ! -f "$ENV_FILE" ]; then
     echo ".env file not found in $MOVIM_DIR. Generating .env file from template..."
     # Force default values (override any externally set variables)
@@ -33,9 +42,7 @@ if [ ! -f "$ENV_FILE" ]; then
     export DB_HOST="localhost"
     export DB_DATABASE="movim_db"
     export DB_USERNAME="movim"
-    if [ -z "$DB_PASSWORD" ]; then
-        export DB_PASSWORD="your_postgres_password"
-    fi
+    export DB_PASSWORD="your_postgres_password"
     envsubst < /home/renz/source/movim-ansible/templates/env_movim_psql.j2 > "$ENV_FILE"
     echo ".env generated as:"
     cat "$ENV_FILE"
