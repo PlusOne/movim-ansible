@@ -11,6 +11,7 @@
     db_name: movim_db
     db_encoding: utf8mb4
     db_collation: utf8mb4_bin
+    db_driver: mysql           # Ensure the DB adapter is set to mysql for migrations
   vars_prompt:
     - name: mysql_root_password
       prompt: "Enter MySQL root password"
