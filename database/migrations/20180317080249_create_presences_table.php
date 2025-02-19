@@ -1,8 +1,8 @@
 Schema::create('presences', function (Blueprint $table) {
     $table->string('session_id', 32);
     $table->string('jid', 64);
-    // Changed from nullable to non-nullable; add a default if needed.
-    $table->string('resource', 128)->default('');
+    // Explicitly set 'resource' as non-nullable with a default
+    $table->string('resource', 128)->default('')->nullable(false);
     $table->integer('value');
     $table->integer('priority');
     $table->string('status', 255)->nullable();
