@@ -168,7 +168,7 @@
         var: env_file
 
     - name: Run Movim database migrations
-      command: composer movim:migrate
+      shell: /usr/bin/env COMPOSER_ALLOW_SUPERUSER=1 composer movim:migrate
       args:
         chdir: "{{ movim_dir }}"
       when: db_type == "mysql"
