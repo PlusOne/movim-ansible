@@ -67,6 +67,10 @@
       prompt: "After pulling the latest code from Movim, do you want to copy .env.example.j2 to .env? (yes/no)"
       private: no
       default: "yes"
+    - name: purge_db
+      prompt: "Do you want to purge the existing database for a new install? (yes/no)"
+      private: no
+      default: "yes"
 
   tasks:
     - name: Remove existing Movim directory and drop DB if reinstall
