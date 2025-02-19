@@ -37,7 +37,8 @@
         encoding: "{{ db_encoding }}"
         collation: "{{ db_collation }}"
         login_user: root
-        login_password: ""  # Update with proper root password if needed
+        login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
       # Movim docs: "Ensure database is created with utf8mb4 and utf8mb4_bin"
     
     # Step 3: Create Movim working directory and set ownership
