@@ -1,0 +1,125 @@
+---
+- name: Deploy Movim with MySQL and Nginx on Debian/Ubuntu
+  hosts: all
+  become: true
+  vars:
+    movim_dir: /var/www/movim
+    service_user: www-data
+    php_version: "8.1"          # Adjust as needed
+    repo_url: "https://github.com/movim/movim.git"
+    db_name: movim_db
+    db_encoding: utf8mb4
+    db_collation: utf8mb4_bin
+    domain_name: example.com    # change as needed
+    web_server: nginx
+  vars_prompt:
+    - name: mysql_root_password
+      prompt: "Enter MySQL root password"
+      private: yes
+  tasks:
+    # 1. Install necessary packages for PHP, MySQL and Nginx.
+    - name: Install required packages
+      apt:
+        name:
+          - mysql-server
+          - "php{{ php_version }}-fpm"
+          - "php{{ php_version }}-curl"
+          - "php{{ php_version }}-mbstring"
+          - "php{{ php_version }}-imagick"
+          - "php{{ php_version }}-gd"
+          - "php{{ php_version }}-xml"
+          - git
+          - composer
+          - nginx
+        state: present
+        update_cache: yes
+      # See tutorial: "Movim requires a SQL server, PHP-FPM and a web-server like nginx."
+
+    # 2. Create and configure the MySQL database with proper encoding and collation.
+    - name: Create and configure MySQL database for Movim
+      mysql_db:
+        name: "{{ db_name }}"
+        state: present
+        encoding: "{{ db_encoding }}"
+        collation: "{{ db_collation }}"
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      # Tutorial reference: “MySQL 5.7+ with utf8mb4 encoding and utf8mb4_bin collation.”
+
+    # 3. Create the Movim working directory and set ownership.
+    - name: Create Movim working directory
+      file:
+        path: "{{ movim_dir }}"
+        state: directory
+        owner: "{{ service_user }}"
+        group: "{{ service_user }}"
+        mode: '0755'
+      # Tutorial ref: "Create the Movim directory (/var/www/movim) and set permissions."
+
+    # 4. Clone the Movim repository from GitHub.
+    - name: Clone Movim repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ movim_dir }}"
+        version: master
+        force: yes
+      # Tutorial reference: "Clone the Movim repository (using Git)."
+
+    # 5. Create necessary subdirectories (cache, log, public/cache).
+    - name: Create required subdirectories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ service_user }}"
+        group: "{{ service_user }}"
+        mode: '0755'
+      loop:
+        - "{{ movim_dir }}/cache"
+        - "{{ movim_dir }}/log"
+        - "{{ movim_dir }}/public/cache"
+      # Tutorial ref: "Create cache, log, and public/cache directories."
+
+    # 6. Install Composer dependencies.
+    - name: Run composer install to install Movim dependencies
+      shell: /usr/bin/env COMPOSER_ALLOW_SUPERUSER=1 composer install
+      args:
+        chdir: "{{ movim_dir }}"
+      # Tutorial ref: "Run Composer install."
+
+    # 7. Copy .env.example to .env for configuration.
+    - name: Copy .env.example to .env
+      copy:
+        src: "{{ movim_dir }}/.env.example"
+        dest: "{{ movim_dir }}/.env"
+        owner: "{{ service_user }}"
+        group: "{{ service_user }}"
+        mode: '0644'
+      # Tutorial note: "Update .env manually or via variables as needed."
+
+    # 8. Run Movim database migrations.
+    - name: Run Movim database migrations
+      shell: /usr/bin/env COMPOSER_ALLOW_SUPERUSER=1 composer movim:migrate
+      args:
+        chdir: "{{ movim_dir }}"
+      # Tutorial ref: "Run composer movim:migrate to update the database."
+
+    # 9. Deploy Nginx configuration.
+    - name: Deploy Nginx configuration for Movim
+      template:
+        src: nginx_movim.conf.j2
+        dest: /etc/nginx/sites-available/movim
+      notify: Reload Nginx
+      # Tutorial ref: "Create a VirtualHost configs for the webserver (Nginx)."
+
+    - name: Enable Movim site in Nginx
+      file:
+        src: /etc/nginx/sites-available/movim
+        dest: /etc/nginx/sites-enabled/movim
+        state: link
+
+  handlers:
+    - name: Reload Nginx
+      service:
+        name: nginx
+        state: reloaded
