@@ -121,6 +121,11 @@
           - php{{ php_version }}-intl
         state: present
 
+    - name: Enable php-intl extension
+      shell: phpenmod -v {{ php_version }} -s ALL intl
+      when: ansible_os_family == 'Debian'
+      register: intl_enabled
+
     - name: Clone Movim repository
       git:
         repo: 'https://github.com/movim/movim.git'
@@ -129,9 +134,15 @@
         force: yes
 
     - name: Run composer install
-      command: composer install
+      command: COMPOSER_ALLOW_SUPERUSER=1 composer install
       args:
         chdir: "{{ movim_dir }}"
+
+    - name: Restart php-fpm if intl enabled
+      service:
+        name: "php{{ php_version }}-fpm"
+        state: restarted
+      when: intl_enabled.changed
 
     - name: Debug copy_env_file variable
       debug:
