@@ -11,6 +11,10 @@
     db_name: movim_db
     db_encoding: utf8mb4
     db_collation: utf8mb4_bin
+  vars_prompt:
+    - name: mysql_root_password
+      prompt: "Enter MySQL root password"
+      private: yes
   tasks:
     # Step 1: Install necessary packages (PHP modules, MySQL, Git, Composer)
     - name: Install required packages
