@@ -118,6 +118,7 @@
           - php{{ php_version }}-mbstring
           - composer
           - php-imagick
+          - php{{ php_version }}-intl
         state: present
 
     - name: Clone Movim repository
