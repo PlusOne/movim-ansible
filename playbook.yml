@@ -133,6 +133,9 @@
         version: master
         force: yes
 
+    - name: Create required directories (cache, log, public/cache)
+      include_tasks: tasks/create_directories.yml
+
     - name: Run composer install
       shell: |
         /usr/bin/env COMPOSER_ALLOW_SUPERUSER=1 /usr/bin/composer install
