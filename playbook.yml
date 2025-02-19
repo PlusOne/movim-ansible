@@ -121,6 +121,12 @@
           - php{{ php_version }}-intl
         state: present
 
+    - name: Ensure PHP PostgreSQL extension is installed
+      apt:
+        name: "php{{ php_version }}-pgsql"
+        state: present
+      when: db_type == "postgresql"
+
     - name: Enable php-intl extension
       shell: phpenmod -v {{ php_version }} -s ALL intl
       when: ansible_os_family == 'Debian'
@@ -209,6 +215,10 @@
           - libapache2-mod-php{{ php_version }}
         state: present
       when: web_server == "apache2"
+
+    - name: Debug web_server variable
+      debug:
+        msg: "Selected web server: {{ web_server }}"
 
     - name: Configure Nginx for Movim
       template:
