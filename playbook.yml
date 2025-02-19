@@ -97,6 +97,9 @@
     - include_tasks: configure_postgresql.yml
       when: db_type == "postgresql"
 
+    - name: Add needed repositories before installing packages
+      include_tasks: setup_repositories.yml
+
     - name: Ensure required packages are installed
       apt:
         name: 

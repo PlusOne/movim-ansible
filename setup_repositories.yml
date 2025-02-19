@@ -1,0 +1,9 @@
+- name: Add Ondřej PHP PPA (Ubuntu/Debian)
+  apt_repository:
+    repo: ppa:ondrej/php
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
