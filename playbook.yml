@@ -186,6 +186,11 @@
       debug:
         var: env_file
 
+    - name: Ensure purge_db.sh is executable
+      file:
+        path: /home/renz/source/movim-ansible/scripts/purge_db.sh
+        mode: '0755'
+    
     - name: Purge database using purge_db.sh if requested
       shell: /home/renz/source/movim-ansible/scripts/purge_db.sh {{ mysql_root_user }} {{ mysql_root_password }} {{ db_name }}
       when: purge_db == "yes"
