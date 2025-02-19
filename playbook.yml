@@ -112,12 +112,12 @@
     - name: Ensure additional PHP modules and composer are installed
       apt:
         name:
-          - php-imagick
-          - php-gd
-          - php-xml
-          - php-mbstring
-          - composer
           - php{{ php_version }}-curl
+          - php{{ php_version }}-gd
+          - php{{ php_version }}-xml
+          - php{{ php_version }}-mbstring
+          - composer
+          - php-imagick
         state: present
 
     - name: Clone Movim repository
