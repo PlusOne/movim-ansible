@@ -35,6 +35,8 @@ if [ ! -f "$ENV_FILE" ]; then
     export DB_USERNAME=${DB_USERNAME:-movim}
     export DB_PASSWORD=${DB_PASSWORD:-your_postgres_password}
     envsubst < /home/renz/source/movim-ansible/templates/env_movim_psql.j2 > "$ENV_FILE"
+    echo ".env generated as:"
+    cat "$ENV_FILE"
 fi
 
 # Load DB settings from .env
@@ -44,6 +46,14 @@ else
     echo "Failed to generate .env file in $MOVIM_DIR."
     exit 1
 fi
+
+# Debug: Show loaded DB environment variables
+echo "Loaded DB variables:"
+echo "DB_DRIVER=${DB_DRIVER}"
+echo "DB_HOST=${DB_HOST}"
+echo "DB_DATABASE=${DB_DATABASE}"
+echo "DB_USERNAME=${DB_USERNAME}"
+echo "DB_PASSWORD=${DB_PASSWORD}"
 
 # Verify required environment variables are set
 if [ -z "$DB_DRIVER" ] || [ -z "$DB_HOST" ] || [ -z "$DB_DATABASE" ] || [ -z "$DB_USERNAME" ] || [ -z "$DB_PASSWORD" ]; then
